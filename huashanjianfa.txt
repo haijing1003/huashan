@@ -1,4 +1,200 @@
-Git仓库配置test·
-1111
-2222https提交
+
+----------------------------------------------------------
+- 初始化Git cd 到文件初始化Git
+git init 
+
+- 查看Git配置
+git config --list
+
+- 设置项目级别/仓库级别:仅在当前本地库范围内有效
+git config user.name zhao_pro
+git config user.email zhao3102ios_pro@163.com
+
+- 系统用户级别:登录当前操作系统的用户范围
+ git config --global zhao3102ios_glb@163.com
+git config --global user.email zhao3102ios_glb@163.com
+
+- 删除某个配置
+git config --global --unset user.name
+git config --global --unset user.email
+
+- 编辑配置文件
+git config --global --edit
+
+----------------------------------------------------------
+- 查看工作区和暂存区状态
+git status
+
+- 创建git.txt	
+vim git.txt	
+
+- 添加文件到暂存区
+git add git.txt
+备注：1.新建文件必须先执行git add, 支持撤回
+     2.修改文件一般也执行git add,如果不执行git add，直接执行commit也可以，不过这样就不能撤回了
+
+- 提交（不常用）到本地库
+git commit -m
+- vim 编辑器 显示行号
+: set nu
+
+- 提交&备注（常用）到本地库
+git commit -m "second commit" git.txt
+
+----------------------------------------------------------
+- 查看git log
+-----------全部
+git log
+
+commit 36d4900d0291cc575c91e5533a6b73152157139c (HEAD -> master)
+Author: zhao_pro <zhao3102ios_pro@163.com>
+Date:   Mon Aug 31 22:56:01 2020 +0800
+
+    第三次提交
+
+-----------漂亮格式一行
+git log --pretty=oneline
+
+36d4900d0291cc575c91e5533a6b73152157139c (HEAD -> master) 第三次提交
+2faa2bac141b10642467ed3a202a19bdf0309e45 second commit
+7c954ccd2baafc4e98051495e7e44c5a4f2048a6 second commit
+64cae7fd7f29865365af07f00ad743fda9f8b8d7 wrote a readme file
+
+-----------哈希值取部分一行
+git log --oneline 
+
+36d4900 (HEAD -> master) 第三次提交
+2faa2ba second commit
+7c954cc second commit
+64cae7f wrote a readme file
+
+-----------前进后退步数
+git reflog
+
+36d4900 (HEAD -> master) HEAD@{0}: commit: 第三次提交
+2faa2ba HEAD@{1}: commit: second commit
+7c954cc HEAD@{2}: commit: second commit
+64cae7f HEAD@{3}: commit (initial): wrote a readme file
+-----------
+
+- 查看文件内容
+cat git.txt
+
+- 编辑文件内容
+vim git.txt
+
+- 显示最后两行
+tail -n 2 git.txt
+
+
+前进后退----------------------------------------------------------
+
+eeaf147 (HEAD -> master) HEAD@{0}: commit: 444444
+36d4900 HEAD@{1}: commit: 第三次提交
+2faa2ba HEAD@{2}: commit: second commit
+7c954cc HEAD@{3}: commit: second commit
+64cae7f HEAD@{4}: commit (initial): wrote a readme file
+
+- 1. 前进回退到 36d4900
+git reset --hard 36d4900
+
+- 2.1回退一步
+git reset --hard HEAD^
+
+- 2.1回退两步
+git reset --hard HEAD^^
+
+- 2.1回退三步
+git reset --hard HEAD^^^
+
+- 3.回退三步
+git reset --hard HEAD~3
+
+注释：1. git reset --hard 36d4900可前进可后退
+     2. git reset --hard HEAD^^^回退3行，只能回退
+     3. git reset --hard HEAD~3 回退3行，只能回退
+
+
+--
+- 删除文件
+rm aa.txt
+git add aa.txt
+git commit -m "删除aa" aa.txt
+
+回退到删除之前就是恢复了aa
+ git reset --hard ee3a70b
+
+
+
+find_git_branch () {
+local dir=. head
+until [ "$dir" -ef / ]; do
+if [ -f "$dir/.git/HEAD" ]; then
+head=$(< "$dir/.git/HEAD")
+if [[ $head = ref:\ refs/heads/* ]]; then
+git_branch=" (${head#*/*/})"
+elif [[ $head != '' ]]; then
+git_branch=" → (detached)"
+else
+git_branch=" → (unknow)"
+fi
+return
+
+fi
+dir="../$dir"
+done
+git_branch=''
+}
+
+PROMPT_COMMAND="find_git_branch; $PROMPT_COMMAND"
+black=$'\[\e[1;30m\]'
+red=$'\[\e[1;31m\]'
+green=$'\[\e[1;32m\]'
+yellow=$'\[\e[1;33m\]'
+blue=$'\[\e[1;34m\]'
+magenta=$'\[\e[1;35m\]'
+cyan=$'\[\e[1;36m\]'
+white=$'\[\e[1;37m\]'
+normal=$'\[\e[m\]'
+PS1="$white[$white@$green\h$white:$cyan\W$yellow\$git_branch$white]\$ $normal"
+
+
+
+-----------------
+- 删除文件并找回来
+- 删除前，文件存在时的状态提交到了本地库
+git reset --hard HEAD
+git reset --hard 【指针位置】
+删除操作已提交到本地库：指针位置指向文件存在的节点
+
+---比较文件差异----
+-- 将工作区中的文件和暂存区进行比较
+
+git diff [本地库中历史版本] [文件名]
+将工作区中的文件和本地库历史记录比较
+不带文件名比较多个文件
+
+git diff apple.txt
+git diff HEAD^ aa.txt
+
+
+
+--分支----------------------------------
+查看分支：git branch -v
+创建分支：git branch hot_fix
+切换分支：git checkout hot_fix
+
+把hot_fix分支代码合并到master
+先切换到master: git checkout master
+合并到master：git merge hot_fix
+
+
+--合并冲突------------------------------
+冲突的解决
+ 第一步:编辑文件，删除特殊符号
+ 第二步:把文件修改到满意的程度，保存退出
+ 第三步:git add [文件名]
+ 第四步:git commit -m "日志信息"
+ 注意:此时commit一定不能带具体文件名：git commit -m "合并冲突1"
+https://github.com/haijing1003/huashan.git
 
