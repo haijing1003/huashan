@@ -25,6 +25,8 @@ git config --global --edit
 - 查看工作区和暂存区状态
 git status
 
+2020-09-04test push
+
 - 创建git.txt	
 vim git.txt	
 
